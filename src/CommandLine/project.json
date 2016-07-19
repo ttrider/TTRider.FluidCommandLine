@@ -1,5 +1,11 @@
-﻿{
+{
+  "title": "TTRider.CommandLine",
+  "copyright": "Copyright (C) 2016 TTRider, L.L.C.",
+  "description": "Command line parser and configuration provider",
   "version": "1.0.0-*",
+
+ 
+
 
   "dependencies": {
     "NETStandard.Library": "1.6.0"
