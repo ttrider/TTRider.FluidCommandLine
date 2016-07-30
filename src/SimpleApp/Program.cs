@@ -37,38 +37,11 @@ namespace SimpleApp
 
         }
 
-        public static ICommandLine GetCommandLine_Arguments()
-        {
-            return CommandLine.Arguments();
-        }
-
-        public void Test_Arguments(ICommandLine cmd)
-        {
-            var cmdLine = cmd.Bind();
-            Assert.IsNotNull(cmdLine);
-            Assert.AreEqual(null, cmdLine.Command);
-        }
-
+       
 
 
 
     }
 
-    class Assert
-    {
-        public static void AreEqual(object expected, object actual)
-        {
-            if (!object.Equals(expected, actual))
-            {
-                throw new InvalidProgramException($"Expected: {expected}; Actual: {actual}");
-            }
-        }
-        public static void IsNotNull(object actual)
-        {
-            if (actual==null)
-            {
-                throw new InvalidProgramException($"Unexpected null");
-            }
-        }
-    }
+
 }

@@ -1,3 +1,5 @@
+using System;
+
 namespace TTRider.FluidCommandLine.Implementation
 {
     public class ParameterCommand : ParameterSet
@@ -17,5 +19,6 @@ namespace TTRider.FluidCommandLine.Implementation
         public string Name { get; set; }
         public string Description { get; set; }
         public bool IsDefault { get; set; }
+        public Action Handler { get; set; }
     }
 }

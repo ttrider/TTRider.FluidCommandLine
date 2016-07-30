@@ -4,7 +4,8 @@ namespace TTRider.FluidCommandLine
 {
     public interface ICommandLine
     {
-        CommandLineParameters Bind(params string[] args);
-        CommandLineParameters Bind(IEnumerable<string> args);
+        void Build(params string[] args);
+        void Build(IEnumerable<string> args);
+
     }
 }

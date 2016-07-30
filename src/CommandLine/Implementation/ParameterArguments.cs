@@ -1,3 +1,5 @@
+using System;
+
 namespace TTRider.FluidCommandLine.Implementation
 {
     public class ParameterArguments : ParameterItem, IParameterProvider
@@ -12,5 +14,6 @@ namespace TTRider.FluidCommandLine.Implementation
         ParameterSet IParameterProvider.ParameterSet => owner;
         ParameterFactory IParameterProvider.ParameterFactory => ((IParameterProvider)owner).ParameterFactory;
 
+        public Action<string> Handler { get; set; }
     }
 }

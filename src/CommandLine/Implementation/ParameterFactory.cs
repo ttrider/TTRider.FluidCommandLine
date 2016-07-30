@@ -16,12 +16,16 @@ namespace TTRider.FluidCommandLine.Implementation
 
 
 
-        public CommandLineParameters Bind(params string[] args)
+
+
+
+
+        public void Build(params string[] args)
         {
-            return Bind((IEnumerable<string>)args);
+            Build((IEnumerable<string>)args);
         }
 
-        public CommandLineParameters Bind(IEnumerable<string> args)
+        public void Build(IEnumerable<string> args)
         {
 
             ParameterCommand command = null;
@@ -56,7 +60,7 @@ namespace TTRider.FluidCommandLine.Implementation
                     {
                         if (this.Commands.Count == 0)
                         {
-                            arguments.Add(argument);
+                            ps.ParameterArguments.Handler(argument);
                         }
                         else
                         {
@@ -64,6 +68,7 @@ namespace TTRider.FluidCommandLine.Implementation
                             {
                                 if (string.Equals(cmd.Name, argument))
                                 {
+                                    cmd.Handler();
                                     command = cmd;
                                     break;
                                 }
@@ -84,7 +89,7 @@ namespace TTRider.FluidCommandLine.Implementation
                     }
                     else if (pSwitch != null)
                     {
-                        switches.Add(pSwitch.Name);
+                        pSwitch.Handler();
                     }
                     else if (pParameter != null)
                     {
@@ -128,16 +133,6 @@ namespace TTRider.FluidCommandLine.Implementation
                     }
                 }
             }
-
-            // validation
-           
-
-
-            return new CommandLineParameters(command?.Name, switches, parameters, arguments);
         }
-
-
-
-
     }
 }
