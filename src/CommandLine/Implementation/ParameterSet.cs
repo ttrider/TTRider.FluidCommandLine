@@ -5,15 +5,16 @@ namespace TTRider.FluidCommandLine.Implementation
 {
     public abstract class ParameterSet : IParameterProvider
     {
-        readonly Regex switchRegex = new Regex("(^-(?\'flag\'\\w)$)|(^--(?\'option\'[^\\s]+)$)|(^(?\'arg\'[^-][^-][^\\s]+)$)");
+        readonly Regex switchRegex = new Regex(@"(?<option> -{1,2}\S*)(?:[=:]?|\s+)(?<value> [^-\s].*?)?(?=\s+[-\/]|$)");
 
         protected ParameterSet()
         {
             this.ParameterArguments = new ParameterArguments(this) { Name = "Arguments", Description = null, Occcurance = Occurance.Prohibited };
         }
 
+        public HashSet<ParameterOption> Options { get; } = new HashSet<ParameterOption>();
+        public HashSet<ParameterOptionValue> OptionsValues { get; } = new HashSet<ParameterOptionValue>();
         public HashSet<ParameterParameter> Parameters { get; } = new HashSet<ParameterParameter>();
-        public HashSet<ParameterSwitch> Switches { get; } = new HashSet<ParameterSwitch>();
 
         public ParameterArguments ParameterArguments { get; }
 
@@ -23,26 +24,13 @@ namespace TTRider.FluidCommandLine.Implementation
         protected abstract ParameterFactory GetFactory();
         ParameterFactory IParameterProvider.ParameterFactory => GetFactory();
 
-
-        internal bool TryGetSwitch(char flag, out ParameterSwitch value)
+        internal bool TryGetOption(ParameterCommand command, string option, out ParameterOption value)
         {
             value = null;
-            foreach (var item in this.Switches)
+            option = option.Replace("-", "").Trim();
+            foreach (var item in command.Options)
             {
-                if (item.Flags.Contains(flag))
-                {
-                    value = item;
-                    return true;
-                }
-            }
-            return false;
-        }
-        internal bool TryGetSwitch(string option, out ParameterSwitch value)
-        {
-            value = null;
-            foreach (var item in this.Switches)
-            {
-                if (item.Options.Contains(option))
+                if (item.Name.Equals(option))
                 {
                     value = item;
                     return true;
@@ -51,25 +39,13 @@ namespace TTRider.FluidCommandLine.Implementation
             return false;
         }
 
-        internal bool TryGetParameter(char flag, out ParameterParameter value)
+        internal bool TryGetParameter(ParameterCommand command, string parameter, out ParameterParameter value)
         {
             value = null;
-            foreach (var item in this.Parameters)
+            parameter = parameter.Replace("-", "").Trim();
+            foreach (var item in command.Parameters)
             {
-                if (item.Flags.Contains(flag))
-                {
-                    value = item;
-                    return true;
-                }
-            }
-            return false;
-        }
-        internal bool TryGetParameter(string option, out ParameterParameter value)
-        {
-            value = null;
-            foreach (var item in this.Parameters)
-            {
-                if (item.Options.Contains(option))
+                if (item.Name.Equals(parameter))
                 {
                     value = item;
                     return true;
@@ -78,52 +54,91 @@ namespace TTRider.FluidCommandLine.Implementation
             return false;
         }
 
-
-        internal void ClassifyParameter(string value, out ParameterSwitch pSwitch, out ParameterParameter pParameter, out string argument)
+        internal bool TryGetOptionValue(ParameterCommand command, string optionValue, IList<ParameterOptionValue> value)
         {
-            pSwitch = null;
-            pParameter = null;
-            argument = null;
-
-            var m = switchRegex.Match(value);
-            if (m.Success)
+            if (value != null)
             {
-                if (m.Groups["flag"].Success)
+                optionValue = optionValue.Trim();
+                if(string.IsNullOrWhiteSpace(optionValue))
                 {
-                    var f = m.Groups["flag"].Value[0];
-                    // lookup flag 
-                    if (!this.TryGetSwitch(f, out pSwitch))
+                    return true;
+                }
+                foreach (var item in command.OptionsValues)
+                {
+                    if (item.Name.Equals(optionValue))
                     {
-                        if (!this.TryGetParameter(f, out pParameter))
-                        {
-                            throw new UnknownFlagException(value);
-                        }
+                        value.Add(item);
+                        return true;
                     }
                 }
-                else if (m.Groups["option"].Success)
+            }
+            return false;
+        }
+
+        internal bool TryGetCommand(string command, out ParameterCommand value)
+        {
+            value = null;
+            foreach (var item in this.GetFactory().Commands)
+            {
+                if (item.Name.Equals(command))
                 {
-                    var f = m.Groups["option"].Value;
-                    // lookup flag 
-                    if (!this.TryGetSwitch(f, out pSwitch))
-                    {
-                        if (!this.TryGetParameter(f, out pParameter))
-                        {
-                            throw new UnknownFlagException(value);
-                        }
-                    }
+                    value = item;
+                    return true;
                 }
-                else if (m.Groups["arg"].Success)
-                {
-                    argument = m.Groups["arg"].Value;
-                }
-                else
-                {
-                    throw new UnknownFlagException(value);
-                }
+            }
+            return false;
+        }
+
+        internal void ClassifyParameter(string value, List<ParameterOption> optionsList, List<ParameterOptionValue> optionsValuesList, List<ParameterParameter> parametersList, out ParameterCommand command)
+        {
+            string commandName = string.Empty;
+            ParameterOption tempOption = null;
+            ParameterParameter tempParameter = null;
+            
+            if (value.Trim().Contains(" "))
+            {
+                commandName = value.Substring(0, value.IndexOf(' '));
             }
             else
             {
-                throw new UnknownFlagException(value);
+                commandName = value.Trim();
+                value = string.Empty;
+            }
+
+            if (!this.TryGetCommand(commandName, out command))
+            {
+                throw new UnknownCommandException(value);
+            }
+
+            if (!string.IsNullOrWhiteSpace(value))
+            {
+                var m = switchRegex.Match(value);
+                
+                if (m.Success)
+                {
+                    List<KeyValuePair<string, string>> matchesList = new List<KeyValuePair<string, string>>();
+                    while (m.Success)
+                    {
+                        if (TryGetParameter(command, m.Groups["option"].Value, out tempParameter))
+                        {
+                            tempParameter.Value = m.Groups["value"].Value.Trim();
+                            parametersList.Add(tempParameter);
+                        }
+                        else if (!TryGetOption(command, m.Groups["option"].Value, out tempOption))
+                        {
+                            throw new UnknownOptionException(value);
+                        }
+                        else
+                        {
+                            optionsList.Add(tempOption);
+                            if (!TryGetOptionValue(command, m.Groups["value"].Value, optionsValuesList))
+                            {
+                                throw new UnknownOptionException(value);
+                            }
+                        }
+                        m = m.NextMatch();
+                    }
+                }                
             }
         }
     }

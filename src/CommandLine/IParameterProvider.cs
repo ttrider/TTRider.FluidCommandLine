@@ -6,6 +6,5 @@ namespace TTRider.FluidCommandLine
     {
         ParameterSet ParameterSet { get; }
         ParameterFactory ParameterFactory { get; }
-
     }
 }

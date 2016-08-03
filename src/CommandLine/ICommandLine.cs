@@ -6,6 +6,5 @@ namespace TTRider.FluidCommandLine
     {
         void Build(params string[] args);
         void Build(IEnumerable<string> args);
-
     }
 }
