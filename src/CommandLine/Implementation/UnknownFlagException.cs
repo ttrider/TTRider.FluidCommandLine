@@ -12,6 +12,26 @@ namespace TTRider.FluidCommandLine.Implementation
         }
     }
 
+    public class UnknownCommandException : Exception
+    {
+        public string Parameter { get; private set; }
+
+        public UnknownCommandException(string parameter)
+        {
+            this.Parameter = parameter;
+        }
+    }
+
+    public class UnknownOptionException : Exception
+    {
+        public string Parameter { get; private set; }
+
+        public UnknownOptionException(string parameter)
+        {
+            this.Parameter = parameter;
+        }
+    }
+
     public class MissingCommandException : Exception
     {
 

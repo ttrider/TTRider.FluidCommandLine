@@ -6,17 +6,15 @@ namespace TTRider.FluidCommandLine.Implementation
     public class ParameterParameter : ParameterItem, IParameterProvider
     {
         private readonly ParameterSet owner;
-
-        internal ParameterParameter(ParameterSet owner, string description, Action<string> handler)
+        
+        internal ParameterParameter(ParameterSet owner, string name, Action<string> handler)
         {
             this.owner = owner;
             this.Handler = handler;
-            this.Description = description;
+            this.Name = name;
         }
 
-        public HashSet<char> Flags { get; } = new HashSet<char>();
-        public HashSet<string> Options { get; } = new HashSet<string>();
-
+        public string Value { get; set; }
         public Action<string> Handler { get; }
 
 
