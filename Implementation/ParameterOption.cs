@@ -9,11 +9,12 @@ namespace TTRider.FluidCommandLine.Implementation
     {
         private readonly ParameterSet owner;
         
-        internal ParameterOption(ParameterSet owner, string name, Action handler)
+        internal ParameterOption(ParameterSet owner, string name, Action handler, bool isDefault)
         {
             this.owner = owner;
             this.Handler = handler;
             this.Name = name;
+            this.IsDefault = isDefault;
         }
 
         public HashSet<ParameterOptionValue> OptionsValues { get; } = new HashSet<ParameterOptionValue>();
@@ -22,6 +23,7 @@ namespace TTRider.FluidCommandLine.Implementation
         //public HashSet<string> Options { get; } = new HashSet<string>();
         public Action Handler { get; }
         public string Name { get; set; }
+        public bool IsDefault { get; set; }
 
 
         ParameterSet IParameterProvider.ParameterSet => owner;

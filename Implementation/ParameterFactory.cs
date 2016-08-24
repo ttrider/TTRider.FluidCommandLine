@@ -14,6 +14,11 @@ namespace TTRider.FluidCommandLine.Implementation
 
         public HashSet<ParameterCommand> Commands { get; } = new HashSet<ParameterCommand>();
 
+        public ParameterCommand GetDefaultCommand()
+        {
+            return Commands.First(x => x.IsDefault);
+        }
+
 
         public void Build(params string[] args)
         {
@@ -35,7 +40,6 @@ namespace TTRider.FluidCommandLine.Implementation
 
                 if (enumerator.MoveNext())
                 {
-
                     ParameterCommand pCommand;
                     ClassifyParameter(enumerator.Current, options, optionsValues, parameters, out pCommand);
 

@@ -16,7 +16,7 @@ namespace TTRider.FluidCommandLine
             return source.ParameterFactory;
         }
 
-        public static ParameterParameter Parameter<T>(this T source, string name, Action<string> handler)
+        public static ParameterParameter Parameter<T>(this T source, string name, Action<string> handler, bool isDefault = false)
             where T : IParameterProvider
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
@@ -24,7 +24,7 @@ namespace TTRider.FluidCommandLine
             if (string.IsNullOrWhiteSpace(name))
                 throw new ArgumentException("Value cannot be null or whitespace.", nameof(name));
 
-            var item = new ParameterParameter(source.ParameterSet, name, handler);
+            var item = new ParameterParameter(source.ParameterSet, name, handler, isDefault);
             source.ParameterSet.Parameters.Add(item);
             return item;
         }
@@ -50,7 +50,7 @@ namespace TTRider.FluidCommandLine
             return item;
         }
 
-        public static ParameterOption Option<T>(this T source, string name, Action handler)
+        public static ParameterOption Option<T>(this T source, string name, Action handler, bool isDefault = false)
             where T : IParameterProvider
         {
             if (source == null) throw new ArgumentNullException(nameof(source));
@@ -58,7 +58,7 @@ namespace TTRider.FluidCommandLine
             if (string.IsNullOrWhiteSpace(name))
                 throw new ArgumentException("Value cannot be null or whitespace.", nameof(name));
 
-            var item = new ParameterOption(source.ParameterSet, name, handler);
+            var item = new ParameterOption(source.ParameterSet, name, handler, isDefault);
             source.ParameterSet.Options.Add(item);
             return item;
         }

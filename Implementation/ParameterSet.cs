@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace TTRider.FluidCommandLine.Implementation
@@ -36,6 +38,7 @@ namespace TTRider.FluidCommandLine.Implementation
                     return true;
                 }
             }
+            value = command.Options.First(x => x.IsDefault); 
             return false;
         }
 
@@ -47,10 +50,11 @@ namespace TTRider.FluidCommandLine.Implementation
             {
                 if (item.Name.Equals(parameter))
                 {
-                    value = item;
+                    value =  new ParameterParameter(item);
                     return true;
                 }
             }
+            value = command.Parameters.First(x => x.IsDefault);
             return false;
         }
 
@@ -86,12 +90,18 @@ namespace TTRider.FluidCommandLine.Implementation
                     return true;
                 }
             }
+            value = this.GetFactory().GetDefaultCommand();
+            if (value != null)
+            {
+                return true;
+            }
             return false;
         }
 
         internal void ClassifyParameter(string value, List<ParameterOption> optionsList, List<ParameterOptionValue> optionsValuesList, List<ParameterParameter> parametersList, out ParameterCommand command)
         {
             string commandName = string.Empty;
+            string tempValue = string.Empty;
             ParameterOption tempOption = null;
             ParameterParameter tempParameter = null;
             
@@ -102,23 +112,47 @@ namespace TTRider.FluidCommandLine.Implementation
             else
             {
                 commandName = value.Trim();
-                value = string.Empty;
             }
 
             if (!this.TryGetCommand(commandName, out command))
             {
                 throw new UnknownCommandException(value);
             }
-
+            if (commandName != command.Name)
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.Append(command.Name);
+                sb.Append(" ");
+                sb.Append(value);
+                tempValue = value;
+                value = sb.ToString();
+            }
+            else if (value == commandName)
+            {
+                value = string.Empty;
+            }
             if (!string.IsNullOrWhiteSpace(value))
             {
                 var m = switchRegex.Match(value);
-                
+                if (!m.Success)
+                {
+                    StringBuilder sb = new StringBuilder();
+                    sb.Append(command.Name);
+                    sb.Append(" ");
+                    var defaultParam = command.Parameters.First(x => x.IsDefault);
+                    sb.Append("-");
+                    sb.Append(defaultParam.Name);
+                    sb.Append(" ");
+                    sb.Append(tempValue);
+                    value = sb.ToString();
+                    m = switchRegex.Match(value);
+                }
                 if (m.Success)
                 {
                     List<KeyValuePair<string, string>> matchesList = new List<KeyValuePair<string, string>>();
                     while (m.Success)
                     {
+                        tempParameter = null;
                         if (TryGetParameter(command, m.Groups["option"].Value, out tempParameter))
                         {
                             tempParameter.Value = m.Groups["value"].Value.Trim();
@@ -138,7 +172,7 @@ namespace TTRider.FluidCommandLine.Implementation
                         }
                         m = m.NextMatch();
                     }
-                }                
+                }                             
             }
         }
     }
