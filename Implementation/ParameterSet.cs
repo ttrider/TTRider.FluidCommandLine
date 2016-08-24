@@ -7,7 +7,7 @@ namespace TTRider.FluidCommandLine.Implementation
 {
     public abstract class ParameterSet : IParameterProvider
     {
-        readonly Regex switchRegex = new Regex(@"(?<option> -{1,2}\S*)(?:[=:]?|\s+)(?<value> [^-\s].*?)?(?=\s+[-\/]|$)");
+        private static readonly Regex switchRegex = new Regex(@"(?<option> -{1,2}\S*)(?:[=:]?|\s+)(?<value> [^-\s].*?)?(?=\s+[-\/]|$)");
 
         protected ParameterSet()
         {
