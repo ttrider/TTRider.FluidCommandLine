@@ -38,7 +38,6 @@ namespace TTRider.FluidCommandLine.Implementation
                     return true;
                 }
             }
-            value = command.Options.First(x => x.IsDefault); 
             return false;
         }
 
@@ -46,16 +45,22 @@ namespace TTRider.FluidCommandLine.Implementation
         {
             value = null;
             parameter = parameter.Replace("-", "").Trim();
-            foreach (var item in command.Parameters)
+            if (string.IsNullOrWhiteSpace(parameter))
             {
-                if (item.Name.Equals(parameter))
+                value = command.Parameters.FirstOrDefault(x => x.IsDefault);
+            }
+            else
+            {
+                foreach (var item in command.Parameters)
                 {
-                    value =  new ParameterParameter(item);
-                    return true;
+                    if (item.Name.Equals(parameter))
+                    {
+                        value = new ParameterParameter(item);
+                        return true;
+                    }
                 }
             }
-            value = command.Parameters.First(x => x.IsDefault);
-            return false;
+            return (value != null);
         }
 
         internal bool TryGetOptionValue(ParameterCommand command, string optionValue, IList<ParameterOptionValue> value)
@@ -134,21 +139,10 @@ namespace TTRider.FluidCommandLine.Implementation
             if (!string.IsNullOrWhiteSpace(value))
             {
                 var m = switchRegex.Match(value);
-                if (!m.Success)
-                {
-                    StringBuilder sb = new StringBuilder();
-                    sb.Append(command.Name);
-                    sb.Append(" ");
-                    var defaultParam = command.Parameters.First(x => x.IsDefault);
-                    sb.Append("-");
-                    sb.Append(defaultParam.Name);
-                    sb.Append(" ");
-                    sb.Append(tempValue);
-                    value = sb.ToString();
-                    m = switchRegex.Match(value);
-                }
                 if (m.Success)
                 {
+                    tempValue = value;
+                    tempValue = tempValue.Remove(0, command.Name.Length);
                     List<KeyValuePair<string, string>> matchesList = new List<KeyValuePair<string, string>>();
                     while (m.Success)
                     {
@@ -170,9 +164,29 @@ namespace TTRider.FluidCommandLine.Implementation
                                 throw new UnknownOptionException(value);
                             }
                         }
+
+                        tempValue = tempValue.Replace(m.Value, "");
                         m = m.NextMatch();
                     }
-                }                             
+
+                    if (!string.IsNullOrWhiteSpace(tempValue))
+                    {
+                        if (TryGetParameter(command, string.Empty, out tempParameter))
+                        {
+                            tempParameter.Value = tempValue.Trim();
+                            parametersList.Add(tempParameter);
+                        }
+                    }
+                }     
+                else if (!string.IsNullOrWhiteSpace(value))
+                {
+                    value = value.Remove(0, command.Name.Length);
+                    if (TryGetParameter(command, string.Empty, out tempParameter))
+                    {
+                        tempParameter.Value = value.Trim();
+                        parametersList.Add(tempParameter);
+                    }
+                }                        
             }
         }
     }

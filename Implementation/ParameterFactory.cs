@@ -16,7 +16,7 @@ namespace TTRider.FluidCommandLine.Implementation
 
         public ParameterCommand GetDefaultCommand()
         {
-            return Commands.First(x => x.IsDefault);
+            return Commands.FirstOrDefault(x => x.IsDefault);
         }
 
 
