@@ -17,10 +17,6 @@ namespace TTRider.FluidCommandLine.Implementation
             this.IsDefault = isDefault;
         }
 
-        public HashSet<ParameterOptionValue> OptionsValues { get; } = new HashSet<ParameterOptionValue>();
-
-        //public HashSet<char> Flags { get; } = new HashSet<char>();
-        //public HashSet<string> Options { get; } = new HashSet<string>();
         public Action Handler { get; }
         public string Name { get; set; }
         public bool IsDefault { get; set; }

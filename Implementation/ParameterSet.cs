@@ -7,7 +7,7 @@ namespace TTRider.FluidCommandLine.Implementation
 {
     public abstract class ParameterSet : IParameterProvider
     {
-        private static readonly Regex switchRegex = new Regex(@"(?<option> -{1,2}\S*)(?:[=:]?|\s+)(?<value> [^-\s].*?)?(?=\s+[-\/]|$)");
+        private static readonly Regex SwitchRegex = new Regex(@"(?<option> -{1,2}\S*)(?:[=:]?|\s+)(?<value> [^-\s].*?)?(?=\s+[-\/]|$)");
 
         protected ParameterSet()
         {
@@ -138,7 +138,7 @@ namespace TTRider.FluidCommandLine.Implementation
             }
             if (!string.IsNullOrWhiteSpace(value))
             {
-                var m = switchRegex.Match(value);
+                var m = SwitchRegex.Match(value);
                 if (m.Success)
                 {
                     tempValue = value;
