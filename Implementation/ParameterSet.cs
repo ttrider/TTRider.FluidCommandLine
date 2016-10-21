@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -89,7 +90,7 @@ namespace TTRider.FluidCommandLine.Implementation
             value = null;
             foreach (var item in this.GetFactory().Commands)
             {
-                if (item.Name.Equals(command))
+                if (item.Name.Equals(command, StringComparison.OrdinalIgnoreCase))
                 {
                     value = item;
                     return true;

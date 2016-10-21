@@ -32,6 +32,10 @@ namespace TTRider.FluidCommandLine.Implementation
         }
     }
 
+    public class MissingDefaultParameterException : Exception
+    {
+    }
+
     public class MissingCommandException : Exception
     {
 

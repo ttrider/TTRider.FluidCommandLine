@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -20,58 +21,173 @@ namespace TTRider.FluidCommandLine.Implementation
         }
 
 
+        static readonly Regex ParameterRegex = new Regex(@"-{1,2}(.*)");
+        
+
         public void Build(params string[] args)
         {
             Build((IEnumerable<string>)args);
         }
-
         public void Build(IEnumerable<string> args)
         {
 
-            List<ParameterOption> options = new List<ParameterOption>();
-            List<ParameterOptionValue> optionsValues = new List<ParameterOptionValue>();
-            List<ParameterParameter> parameters = new List<ParameterParameter>();
-
-            ParameterSet ps = this;
 
             if (args != null)
             {
-                var enumerator = args.GetEnumerator();
-
-                if (enumerator.MoveNext())
+                using (var arg = args
+                    .Where(a=>!string.IsNullOrWhiteSpace(a))
+                    .GetEnumerator())
                 {
-                    ParameterCommand pCommand;
-                    ClassifyParameter(enumerator.Current, options, optionsValues, parameters, out pCommand);
-
-                    if (pCommand != null)
+                    if (arg.MoveNext())
                     {
-                        if (parameters.Count > 0)
+
+                        // do we have a command or the first argument for the default command
+                        var match = ParameterRegex.Match(arg.Current);
+                        var currentCommand =
+                            !match.Success
+                                ? this.Commands.FirstOrDefault(item => item.Name.Equals(arg.Current, StringComparison.OrdinalIgnoreCase))
+                                : this.Commands.FirstOrDefault(item => item.IsDefault);
+
+                        if (currentCommand == null)
                         {
-                            foreach (ParameterParameter paramItem in parameters)
-                            {
-                                paramItem.Handler(paramItem.Value);
-                            }
+                            throw new UnknownCommandException(arg.Current);
                         }
-                        if (optionsValues.Count > 0)
+
+
+                        // let's process the rest of the command line
+                        var processing = match.Success || arg.MoveNext();
+                        var inTail = false;
+
+                        while (processing)
                         {
-                            foreach (ParameterOptionValue optionValue in optionsValues)
+                            match = ParameterRegex.Match(arg.Current);
+                            if (match.Success)
                             {
-                                optionValue.Handler();
+                                if (inTail)
+                                {
+                                    throw new UnknownOptionException("can't have options after tail arguments");
+                                }
+
+                                var parameterName = match.Groups[1].Value;
+
+                                var parameter =
+                                    currentCommand.Parameters.FirstOrDefault(
+                                        item => item.Name.Equals(parameterName, StringComparison.OrdinalIgnoreCase));
+                                var options =
+                                    currentCommand.Options.FirstOrDefault(
+                                        item => item.Name.Equals(parameterName, StringComparison.OrdinalIgnoreCase));
+
+                                if (parameter != null)
+                                {
+                                    // we may have a value in the next argument
+                                    processing = arg.MoveNext();
+                                    if (!processing)
+                                    {
+                                        parameter.Handler(null);
+                                    }
+                                    else
+                                    {
+                                        match = ParameterRegex.Match(arg.Current);
+                                        if (!match.Success)
+                                        {
+                                            parameter.Handler(arg.Current);
+                                            processing = arg.MoveNext();
+                                        }
+                                        else
+                                        {
+                                            parameter.Handler(null);
+                                        }
+                                    }
+                                }
+                                else if (options != null)
+                                {
+                                    options.Handler();
+                                    processing = arg.MoveNext();
+                                }
+                                else
+                                {
+                                    throw new UnknownOptionException(parameterName);
+                                }
                             }
-                        }
-                        if (options.Count > 0)
-                        {
-                            foreach (ParameterOption option in options)
+                            else
                             {
-                                option.Handler();
+                                // looks like we have some tail arguments
+
+                                var parameter =
+                                    currentCommand.Parameters.FirstOrDefault(
+                                        item => item.IsDefault);
+                                if (parameter == null)
+                                {
+                                    throw new MissingDefaultParameterException();
+                                }
+
+                                parameter.Handler(arg.Current);
+                                inTail = true;
+
+
+                                processing = arg.MoveNext();
                             }
+                            
                         }
-                        pCommand.Handler();
+
+                        currentCommand.Handler();
                     }
-                    // if there are commands, one of them needs to 
-                    // either match the first argument or there should be a default command
+                    else
+                    {
+                        //print help
+                    }
                 }
+
+
+
+            }
+            else
+            {
+                //print help here
             }
         }
+        //public void Build(IEnumerable<string> args)
+        //{
+        //    if (args != null)
+        //    {
+        //        var argumentString = string.Join(" ", args);
+
+
+        //        List<ParameterOption> options = new List<ParameterOption>();
+        //        List<ParameterOptionValue> optionsValues = new List<ParameterOptionValue>();
+        //        List<ParameterParameter> parameters = new List<ParameterParameter>();
+
+        //        ParameterSet ps = this;
+
+        //        ParameterCommand pCommand;
+        //        ClassifyParameter(argumentString, options, optionsValues, parameters, out pCommand);
+
+        //        if (pCommand != null)
+        //        {
+        //            if (parameters.Count > 0)
+        //            {
+        //                foreach (ParameterParameter paramItem in parameters)
+        //                {
+        //                    paramItem.Handler(paramItem.Value);
+        //                }
+        //            }
+        //            if (optionsValues.Count > 0)
+        //            {
+        //                foreach (ParameterOptionValue optionValue in optionsValues)
+        //                {
+        //                    optionValue.Handler();
+        //                }
+        //            }
+        //            if (options.Count > 0)
+        //            {
+        //                foreach (ParameterOption option in options)
+        //                {
+        //                    option.Handler();
+        //                }
+        //            }
+        //            pCommand.Handler();
+        //        }
+        //    }
+        //}
     }
 }

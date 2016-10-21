@@ -62,18 +62,5 @@ namespace TTRider.FluidCommandLine
             source.ParameterSet.Options.Add(item);
             return item;
         }
-
-        public static ParameterOptionValue OptionValue<T>(this T source, string name, Action handler)
-            where T : IParameterProvider
-        {
-            if (source == null) throw new ArgumentNullException(nameof(source));
-            if (handler == null) throw new ArgumentNullException(nameof(handler));
-            if (string.IsNullOrWhiteSpace(name))
-                throw new ArgumentException("Value cannot be null or whitespace.", nameof(name));
-
-            var item = new ParameterOptionValue(source.ParameterSet, name, handler);
-            source.ParameterSet.OptionsValues.Add(item);
-            return item;
-        }       
     }
 }
