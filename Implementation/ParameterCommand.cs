@@ -6,7 +6,7 @@ namespace TTRider.FluidCommandLine.Implementation
     {
         private readonly ParameterFactory parameterFactory;
 
-        public ParameterCommand(ParameterFactory parameterFactory)
+        internal ParameterCommand(ParameterFactory parameterFactory)
         {
             this.parameterFactory = parameterFactory;
         }
@@ -16,9 +16,9 @@ namespace TTRider.FluidCommandLine.Implementation
             return this.parameterFactory;
         }
 
-        public string Name { get; set; }
-        public string Description { get; set; }
-        public bool IsDefault { get; set; }
-        public Action Handler { get; set; }
+        internal string Name { get; set; }
+        internal string Description { get; set; }
+        internal bool IsDefault { get; set; }
+        internal Action Handler { get; set; }
     }
 }

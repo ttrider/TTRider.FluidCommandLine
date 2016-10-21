@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 
 namespace TTRider.FluidCommandLine.Implementation
 {
@@ -23,9 +22,8 @@ namespace TTRider.FluidCommandLine.Implementation
             this.IsDefault = IsDefault;
         }
 
-        public string Value { get; set; }
-        public bool IsDefault { get; set; }
-        public Action<string> Handler { get; }
+        internal bool IsDefault { get; set; }
+        internal Action<string> Handler { get; }
 
 
         ParameterSet IParameterProvider.ParameterSet => owner;
