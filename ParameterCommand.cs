@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace TTRider.FluidCommandLine.Implementation
+namespace TTRider.FluidCommandLine
 {
     public class ParameterCommand : ParameterSet
     {

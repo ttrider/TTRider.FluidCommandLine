@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace TTRider.FluidCommandLine.Implementation
+namespace TTRider.FluidCommandLine
 {
     public partial class ParameterFactory : ParameterSet
     {

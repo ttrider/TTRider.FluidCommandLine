@@ -1,4 +1,4 @@
-namespace TTRider.FluidCommandLine.Implementation
+namespace TTRider.FluidCommandLine
 {
     public class MissingParameterValueException : CommandLineException
     {

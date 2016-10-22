@@ -1,5 +1,5 @@
 using System;
-using TTRider.FluidCommandLine.Implementation;
+using TTRider.FluidCommandLine;
 
 namespace TTRider.FluidCommandLine
 {

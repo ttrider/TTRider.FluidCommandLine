@@ -1,6 +1,6 @@
 using System;
 
-namespace TTRider.FluidCommandLine.Implementation
+namespace TTRider.FluidCommandLine
 {
     public class ParameterParameter : ParameterItem
     {
