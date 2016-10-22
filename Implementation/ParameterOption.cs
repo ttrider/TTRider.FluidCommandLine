@@ -2,21 +2,16 @@
 
 namespace TTRider.FluidCommandLine.Implementation
 {
-    public class ParameterOption : ParameterItem, IParameterProvider
+    public class ParameterOption : ParameterItem
     {
-        private readonly ParameterSet owner;
         
-        internal ParameterOption(ParameterSet owner, string name, Action handler)
+        internal ParameterOption(ParameterSet owner, Guid id, string name, string description, Action handler)
+            :base(owner, id, name, description)
         {
-            this.owner = owner;
             this.Handler = handler;
-            this.Name = name;
         }
 
         internal Action Handler { get; }
 
-        ParameterSet IParameterProvider.ParameterSet => owner;
-
-        ParameterFactory IParameterProvider.ParameterFactory => ((IParameterProvider)owner).ParameterFactory;
     }
 }

@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace TTRider.FluidCommandLine.Implementation
 {
@@ -6,19 +8,64 @@ namespace TTRider.FluidCommandLine.Implementation
     {
         private readonly ParameterFactory parameterFactory;
 
-        internal ParameterCommand(ParameterFactory parameterFactory)
+        internal ParameterCommand(ParameterFactory parameterFactory, string name, string description, Action handler, bool isDefault)
         {
             this.parameterFactory = parameterFactory;
+            Name = name;
+            Description = description;
+            IsDefault = isDefault;
+            Handler = handler;
         }
 
-        protected override ParameterFactory GetFactory()
+        internal override ParameterFactory GetParameterFactory() => this.parameterFactory;
+
+        internal string Name { get; }
+        internal string Description { get; }
+        internal bool IsDefault { get; }
+        internal Action Handler { get; }
+
+
+        internal ParameterParameter GetDefaultParameter()
         {
-            return this.parameterFactory;
+            return this
+                .Parameters
+                .Concat(
+                    GetParameterFactory().Parameters
+                    )
+                .FirstOrDefault(item => item.IsDefault);
         }
 
-        internal string Name { get; set; }
-        internal string Description { get; set; }
-        internal bool IsDefault { get; set; }
-        internal Action Handler { get; set; }
+        internal ParameterParameter GetParameter(string name)
+        {
+            return this
+                .Parameters
+                .Concat(
+                    GetParameterFactory().Parameters
+                    )
+                .FirstOrDefault(item => string.Equals(item.Name, name));
+        }
+
+        internal ParameterOption GetOption(string name)
+        {
+            return this
+                .Options
+                .Concat(
+                    GetParameterFactory().Options
+                    )
+                .FirstOrDefault(item => string.Equals(item.Name, name));
+        }
+
+        internal IEnumerable<ParameterItem> ParameterItems
+        {
+            get
+            {
+                var pf = GetParameterFactory();
+
+                return this.Parameters.AsEnumerable<ParameterItem>()
+                    .Concat(this.Options)
+                    .Concat(pf.Parameters)
+                    .Concat(pf.Options);
+            }
+        }
     }
 }

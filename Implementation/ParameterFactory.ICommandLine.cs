@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace TTRider.FluidCommandLine.Implementation
@@ -17,12 +18,9 @@ namespace TTRider.FluidCommandLine.Implementation
         {
             try
             {
-
                 if (args != null)
                 {
-                    using (var arg = args
-                        .Where(a => !string.IsNullOrWhiteSpace(a))
-                        .GetEnumerator())
+                    using (var arg = args.GetEnumerator())
                     {
                         if (arg.MoveNext())
                         {
@@ -46,8 +44,7 @@ namespace TTRider.FluidCommandLine.Implementation
                                         throw new UnknownCommandException(arg.Current);
                                     }
 
-                                    var defaultParameter = currentCommand.Parameters.FirstOrDefault(
-                                        item => item.IsDefault);
+                                    var defaultParameter = currentCommand.GetDefaultParameter();
                                     if (defaultParameter == null)
                                     {
                                         throw new UnknownCommandException(arg.Current);
@@ -59,6 +56,15 @@ namespace TTRider.FluidCommandLine.Implementation
                             }
                             else
                             {
+                                // a special case - if we have a help flag as the first argument
+                                // display a complete help information
+                                if (string.Equals(this.HelpParameter, match.Groups[1].Value,
+                                    StringComparison.OrdinalIgnoreCase))
+                                {
+                                    PrintHelp();
+                                    return 1;
+                                }
+
                                 currentCommand = this.Commands.FirstOrDefault(c => c.IsDefault);
                                 if (currentCommand == null)
                                 {
@@ -79,12 +85,15 @@ namespace TTRider.FluidCommandLine.Implementation
 
                                     var parameterName = match.Groups[1].Value;
 
-                                    var parameter =
-                                        currentCommand.Parameters.FirstOrDefault(
-                                            item => item.Name.Equals(parameterName, StringComparison.OrdinalIgnoreCase));
-                                    var options =
-                                        currentCommand.Options.FirstOrDefault(
-                                            item => item.Name.Equals(parameterName, StringComparison.OrdinalIgnoreCase));
+                                    // in case we found a help parameter - display command help
+                                    if (string.Equals(this.HelpParameter, parameterName, StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        PrintHelp(currentCommand);
+                                        return 1;
+                                    }
+
+                                    var parameter = currentCommand.GetParameter(parameterName);
+                                    var options = currentCommand.GetOption(parameterName);
 
                                     if (parameter != null)
                                     {
@@ -132,9 +141,7 @@ namespace TTRider.FluidCommandLine.Implementation
                                 {
                                     // looks like we have some tail arguments
 
-                                    var parameter =
-                                        currentCommand.Parameters.FirstOrDefault(
-                                            item => item.IsDefault);
+                                    var parameter = currentCommand.GetDefaultParameter();
                                     if (parameter == null)
                                     {
                                         throw new MissingDefaultParameterException(arg.Current);
@@ -150,29 +157,136 @@ namespace TTRider.FluidCommandLine.Implementation
                             }
 
                             currentCommand.Handler();
-                        }
-                        else
-                        {
-                            //print help
                             return 1;
                         }
+                        PrintHelp();
+                        return 1;
                     }
-
-
-
                 }
-                else
-                {
-                    //print help here
-                    return 1;
-                }
-                return 0;
+                PrintHelp();
+                return 1;
             }
             catch (CommandLineException ex)
             {
                 Console.WriteLine(ex.Message);
                 return 1;
             }
+        }
+
+        private void PrintHelp(ParameterCommand currentCommand)
+        {
+            Console.WriteLine();
+            Console.WriteLine("usage:");
+            Console.WriteLine($"\tac {currentCommand.Name} [parameters] | -{this.HelpParameter}");
+            Console.WriteLine($"\t{currentCommand.Description}");
+            Console.WriteLine();
+            Console.WriteLine($"parameters:");
+
+            foreach (var group in
+                currentCommand.ParameterItems
+                    .GroupBy(pi => pi.Id))
+            {
+                string description = null;
+                bool hasParameter = false;
+                bool hasOptions = false;
+                bool hasDefault = false;
+                string valueName = null;
+
+                var names = new HashSet<string>();
+
+                foreach (var item in group)
+                {
+                    description = item.Description;
+                    names.Add(item.Name);
+                    if (item is ParameterParameter)
+                    {
+                        hasParameter = true;
+
+                        var p = (ParameterParameter)item;
+
+                        hasDefault |= p.IsDefault;
+
+                        if (!string.IsNullOrWhiteSpace(p.ValueName))
+                        {
+                            valueName = p.ValueName;
+                        }
+                    }
+                    else
+                    {
+                        hasOptions = true;
+                    }
+                }
+
+                var sb = new StringBuilder("\t");
+                sb.Append(string.Join("|", names.Select(name => (name.Length == 1 ? "-" : "--") + name)));
+                sb.Append(" ");
+                if (hasParameter)
+                {
+                    if (string.IsNullOrWhiteSpace(valueName))
+                    {
+                        if (hasOptions)
+                        {
+                            sb.Append("[<");
+                            sb.Append(description);
+                            sb.Append(">]");
+                        }
+                        else
+                        {
+                            sb.Append("<");
+                            sb.Append(description);
+                            sb.Append(">");
+                        }
+
+                    }
+                    else
+                    {
+                        if (hasOptions)
+                        {
+                            sb.Append("[<");
+                            sb.Append(valueName);
+                            sb.Append(">]");
+                        }
+                        else
+                        {
+                            sb.Append("<");
+                            sb.Append(valueName);
+                            sb.Append(">");
+                        }
+
+                        sb.Append(" - ");
+                        sb.Append(description);
+                    }
+
+                    if (hasDefault)
+                    {
+                        sb.Append(" (*)");
+
+                    }
+                }
+                else if (hasOptions)
+                {
+                    sb.Append("- ");
+                    sb.Append(description);
+                }
+
+                Console.WriteLine(sb.ToString());
+            }
+            Console.WriteLine();
+        }
+
+        private void PrintHelp()
+        {
+            Console.WriteLine();
+            Console.WriteLine("usage:");
+            Console.WriteLine($"\tac [command] [parameters] | -{this.HelpParameter}");
+            Console.WriteLine();
+            Console.WriteLine($"command{(this.Commands.Count == 1 ? "" : "s")}:");
+
+            foreach (var command in this.Commands)
+            {
+                Console.WriteLine($"\t{command.Name,-10}\t{command.Description}\t{(command.IsDefault ? " (*)" : "")}");
+            }
+            Console.WriteLine();
         }
     }
 }

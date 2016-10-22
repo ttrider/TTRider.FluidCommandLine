@@ -4,8 +4,10 @@ namespace TTRider.FluidCommandLine.Implementation
 {
     public partial class ParameterFactory : ParameterSet
     {
-        protected override ParameterFactory GetFactory() => this;
+        internal override ParameterFactory GetParameterFactory() => this;
 
         internal HashSet<ParameterCommand> Commands { get; } = new HashSet<ParameterCommand>();
+
+        internal string HelpParameter { get; set; }
     }
 }

@@ -2,32 +2,17 @@ using System;
 
 namespace TTRider.FluidCommandLine.Implementation
 {
-    public class ParameterParameter : ParameterItem, IParameterProvider
+    public class ParameterParameter : ParameterItem
     {
-        private readonly ParameterSet owner;
-
-        internal ParameterParameter(ParameterParameter param)
+        internal ParameterParameter(ParameterSet owner, Guid id, string name, string description, Action<string> handler, bool isDefault, string valueName)
+            : base(owner, id, name, description)
         {
-            this.owner = param.owner;
-            this.Handler = param.Handler;
-            this.Name = param.Name;
-            this.IsDefault = param.IsDefault;
-        }
-
-        internal ParameterParameter(ParameterSet owner, string name, Action<string> handler, bool IsDefault = false)
-        {
-            this.owner = owner;
             this.Handler = handler;
-            this.Name = name;
-            this.IsDefault = IsDefault;
+            this.IsDefault = isDefault;
+            this.ValueName = valueName;
         }
-
-        internal bool IsDefault { get; set; }
+        internal string ValueName { get; }
+        internal bool IsDefault { get; }
         internal Action<string> Handler { get; }
-
-
-        ParameterSet IParameterProvider.ParameterSet => owner;
-
-        ParameterFactory IParameterProvider.ParameterFactory => ((IParameterProvider) owner).ParameterFactory;
     }
 }
