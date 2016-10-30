@@ -8,7 +8,7 @@ namespace TTRider.FluidCommandLine
 {
     public partial class ParameterFactory : ICommandLine
     {
-        static readonly Regex ParameterRegex = new Regex(@"-{1,2}(.*)");
+        static readonly Regex ParameterRegex = new Regex(@"^-{1,2}(.*)");
 
         int ICommandLine.Run(params string[] args)
         {

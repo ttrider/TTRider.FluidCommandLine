@@ -111,5 +111,58 @@ namespace Tests
 
             Assert.Equal(new[] { "input_one" }, buildCommand.Inputs);
         }
+
+        [Fact]
+        public void AC()
+        {
+            var commandLine = CommandLine
+              .Help("h")
+              .Option("v", () => { }, "verbose output")
+              .DefaultCommand("build", () => { }, "Build a project")
+                .DefaultParameter("i", (p) => { }, "path to the acproj.json")
+                .Option("fk", () => { }, "generate FOREIGN KEYs")
+                .Option("doc", () => { }, "generate documentation")
+                .Parameter("metadata", "m", str =>
+                {
+                }, () => { },
+                    "compile metadata", "output directory for metadata xml file")
+                .Parameter("sql", str =>
+                {
+
+                }, () => { },
+                    "compile SQLServer scripts", "output directory for the SQLServer files")
+
+                .Parameter("postgres", str =>
+                {
+                }, () => { },
+                    "compile Portgres scripts", "output directory for the Portgres files")
+
+
+            .Command("install", () => { }, "Install a project")
+                .DefaultParameter("i", str => { }, "path to the acproj.json")
+                .Option("fk", () => { }, "create FOREIGN KEYs")
+                .Option("data", "d", () => {  }, "install data")
+                .Parameter("sql", str =>
+                {
+                }, "install SQLServer schema", "SQLServer connection string")
+                .Parameter("postgres", str =>
+                {
+                }, "install Postgres schema", "Postgres connection string")
+            .End();
+
+            var args = new []
+            {
+                "install",
+                "--data",
+                "--sql",
+                "Server=tcp:w90cnqf7o5.database.windows.net,1433;Initial Catalog=ac-pcc-2016;Persist Security Info=False;User ID=river;Password=$martM0ney;MultipleActiveResultSets=False;Encrypt=True;TrustServerCertificate=False;Connection Timeout=30;",
+                "-i",
+                @"..\..\..\Solutions\PopulationHealth"
+            };
+
+            commandLine.Run(args);
+        }
+
+
     }
 }
