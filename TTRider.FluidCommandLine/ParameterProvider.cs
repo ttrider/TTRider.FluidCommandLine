@@ -23,6 +23,21 @@ namespace TTRider.FluidCommandLine
             return item;
         }
 
+        internal ParameterCommand AddCommand(string name, string description, Func<int> handler, bool isDefault)
+        {
+            var item =
+                new ParameterCommand(
+                    this.GetParameterFactory(),
+                    name,
+                    description,
+                    handler,
+                    isDefault);
+
+            this.GetParameterFactory().Commands.Add(item);
+
+            return item;
+        }
+
         internal ParameterProvider AddOption(Guid id, string name, string description, Action handler)
         {
             var ps = this.GetParameterSet();

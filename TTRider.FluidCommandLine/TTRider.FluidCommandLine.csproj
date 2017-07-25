@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <Description>Fluid-style command line handler</Description>
+    <Copyright>Copyright (C) 2014-2017 TTRider, L.L.C.</Copyright>
+    <AssemblyTitle>TTRider.FluidCommandLine</AssemblyTitle>
+    <VersionPrefix>1.2.0</VersionPrefix>
+    <Authors>TTRider;AdaptCore Technologies;iatam</Authors>
+    <TargetFrameworks>netstandard1.6;net461;net451</TargetFrameworks>
+    <AssemblyName>TTRider.FluidCommandLine</AssemblyName>
+    <PackageId>TTRider.FluidCommandLine</PackageId>
+    <PackageTags>command line</PackageTags>
+    <PackageProjectUrl>https://github.com/ttrider/TTRider.FluidCommandLine</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/ttrider/TTRider.FluidCommandLine/blob/master/LICENSE</PackageLicenseUrl>
+    <NetStandardImplicitPackageVersion>1.6.0</NetStandardImplicitPackageVersion>
+    <PackageTargetFallback Condition=" '$(TargetFramework)' == 'netstandard1.6' ">$(PackageTargetFallback);dnxcore50;portable-net451+win8</PackageTargetFallback>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
+    <Reference Include="System" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net451' ">
+    <Reference Include="System" />
+    <Reference Include="Microsoft.CSharp" />
+  </ItemGroup>
+
+</Project>

@@ -26,7 +26,7 @@ namespace TTRider.FluidCommandLine
         }
 
 
-        #region Commands
+        #region Commands with Action
 
         public static ParameterCommand DefaultCommand(string name, Action handler, string description)
         {
@@ -67,6 +67,48 @@ namespace TTRider.FluidCommandLine
                     isDefault);
         }
         #endregion Commands
+
+        #region Commands with Func
+        public static ParameterCommand DefaultCommand(string name, Func<int> handler, string description)
+        {
+            return new ParameterFactory().Command(name, handler, true, description);
+        }
+        public static ParameterCommand Command(string name, Func<int> handler, string description)
+        {
+            return new ParameterFactory().Command(name, handler, false, description);
+        }
+        public static ParameterCommand Command(string name, Func<int> handler, bool isDefault, string description)
+        {
+            return new ParameterFactory().Command(name, handler, isDefault, description);
+        }
+        public static ParameterCommand DefaultCommand<T>(this T source, string name, Func<int> handler, string description)
+            where T : ParameterProvider
+        {
+            return source.Command(name, handler, true, description);
+        }
+        public static ParameterCommand Command<T>(this T source, string name, Func<int> handler, string description)
+            where T : ParameterProvider
+        {
+            return source.Command(name, handler, false, description);
+        }
+        public static ParameterCommand Command<T>(this T source, string name, Func<int> handler, bool isDefault, string description)
+            where T : ParameterProvider
+        {
+            if (source == null) throw new ArgumentNullException(nameof(source));
+            if (handler == null) throw new ArgumentNullException(nameof(handler));
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentException("Value cannot be null or whitespace.", nameof(name));
+            if (string.IsNullOrWhiteSpace(description))
+                throw new ArgumentException("Value cannot be null or whitespace.", nameof(description));
+
+            return source.AddCommand(
+                    name,
+                    description,
+                    handler,
+                    isDefault);
+        }
+
+        #endregion
 
         #region Parameters
 

@@ -14,6 +14,18 @@ namespace TTRider.FluidCommandLine
             Name = name;
             Description = description;
             IsDefault = isDefault;
+            Handler = () =>
+            {
+                handler();
+                return 0;
+            };
+        }
+        internal ParameterCommand(ParameterFactory parameterFactory, string name, string description, Func<int> handler, bool isDefault)
+        {
+            this.parameterFactory = parameterFactory;
+            Name = name;
+            Description = description;
+            IsDefault = isDefault;
             Handler = handler;
         }
 
@@ -22,7 +34,7 @@ namespace TTRider.FluidCommandLine
         internal string Name { get; }
         internal string Description { get; }
         internal bool IsDefault { get; }
-        internal Action Handler { get; }
+        internal Func<int> Handler { get; }
 
 
         internal ParameterParameter GetDefaultParameter()

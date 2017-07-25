@@ -34,6 +34,7 @@ namespace Tests
                     .Parameter("input", input => testCommand.Inputs.Add(input), "input")
                     .Option("o", () => testCommand.OFlag = true, "enable output")
                     .Option("output", () => testCommand.OutputFlag = true, "enable output")
+                .Command("retval", () => { return 0; }, "using ret value")
                 .End();
         }
 
